@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+	<title>Zombie vs Kitty! Voleyball/</title>
+	<script src="jquery-1.7.2.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		var Game = {
+				start : function() {
+					this.loopId = setInterval(gameLoop, 100);
+				},
+				end : function() {
+					clearInterval(this.loopId);
+					setTimeout(function() {
+						alert('end game');
+					}, 50);
+				},
+				winer : function() {
+					//func body
+				},
+				score : function() {
+					//func body
+				},
+				loopId : function() {}
+			},
+			playerOne = {
+				X : 100,
+				Y : 300,
+				W : 81,
+				H : 96,
+				src : 'zombies.jpg',
+				img : new Image(),
+				pushBall : function() {
+					var middleX = this.X + parseInt(this.W/2),
+						middleY = this.Y + parseInt(this.H/2),
+						rightX = this.X + this.W,
+						ballBottomY = ball.Y + ball.H,
+						middleBallX = ball.X + parseInt(ball.W/2),
+						middleBallY = ball.Y + parseInt(ball.H/2);
+
+					// ball.X < rightX < middleBallX
+					if ((rightX < (ball.X + ball.W)) && (ball.X < rightX) && (ballBottomY > this.Y)) {
+
+						ball.vector = [2, -1];
+
+					} else if ((ball.X < this.X) && (this.X < (ball.X + ball.W)) && (ballBottomY > this.Y)) {
+
+						ball.vector = [-2, -1];
+
+					}
+ 				},
+ 				up : function() {
+ 					if (playerOne.Y < 280) {
+ 						return false;
+ 					}
+
+ 					playerOne.Y -= 150;
+ 					var interval = setInterval(function() {
+ 						if (playerOne.Y >= 280) {
+ 							return clearInterval(interval);
+ 						}
+
+ 						playerOne.Y += 5;
+ 					}, 25);
+ 				},
+ 				left : function() {
+ 					if (playerOne.X - 10 <= 0) {
+ 						return false;
+ 					}
+
+ 					playerOne.X -= 5;
+ 				},
+ 				right: function() {
+ 					if (playerOne.X + playerOne.W + 10 >= 320) {
+ 						return false;
+ 					}
+
+ 					playerOne.X += 5;
+ 				}
+			},
+			playerTwo = {},
+			ball = {
+				X : 100,
+				Y : 100,
+				W : 80,
+				H : 80,
+				vector : [1, 1],
+				move : function() {
+					var nextX = this.X + this.vector[0],
+						nextY = this.Y + this.vector[1];
+
+					if (nextX <= 0) {
+						this.vector[0] = 1;
+					} else if ((nextX + this.W) >= 640) {
+						this.vector[0] = -1;
+					}
+
+					if (nextY <= 0) {
+						this.vector[1] = 1;
+					} else if ((nextY + this.H) >= 380) {
+						if (nextX < 320) {
+							Game.end();
+						}
+						//Game.end();
+						this.vector[1] = -1;
+					}
+
+					// toggle ball vector when zombie push ball
+					if (playerOne.pushBall()) {
+						console.log( 'push' );
+					}
+
+					this.X = this.X + this.vector[0]*10;
+					this.Y = this.Y + this.vector[1]*10;
+				},
+				src : 'ball.jpg',
+				img : new Image()
+			},
+			screenWidth,
+			screenHeight,
+			ctx,
+			backgroundImg = new Image();
+
+
+
+		function initGame() {
+			ctx = document.getElementById('canvas').getContext('2d');
+
+			//Calulate screen height and width
+			screenWidth = parseInt($("#canvas").attr("width"));
+			screenHeight = parseInt($("#canvas").attr("height"));
+
+			$(document).on('keydown', function(e) {
+				if (parseInt(e.which) === 38) {
+					playerOne.up();
+				}
+				if (parseInt(e.which) === 39) {
+					playerOne.right();
+				}
+				if (parseInt(e.which) === 37) {
+					playerOne.left();
+				}
+			});
+
+			var $c = $("#container")
+
+			$c.mousemove(function(e){
+				playerOne.X = e.pageX;
+				//playerOne.Y = e.pageY;
+			});
+
+			$c.on('click', function() {
+				playerOne.up();
+			});
+
+			$('#run').on('click', function() {
+				Game.start();
+			});
+
+			backgroundImg.src = 'background.jpg';
+
+			loadImgs();
+		}
+
+		function loadImgs() {
+			ball.img.src = ball.src;
+			playerOne.img.src = playerOne.src;
+		}
+
+		function gameLoop() { 
+			//Clear the screen (i.e. a draw a clear rectangle the size of the screen)
+			ctx.clearRect(0, 0, screenWidth, screenHeight);
+			ctx.save();
+
+			ctx.drawImage(backgroundImg, 0, 0);
+
+			ctx.drawImage(playerOne.img, playerOne.X, playerOne.Y);
+
+			ball.move();
+
+			ctx.drawImage(ball.img, ball.X, ball.Y);
+
+			ctx.restore();
+		}
+
+		$(document).ready(function() {
+			initGame();
+		});
+	</script>
+</head>
+<body>
+	<div id="container" style="border:1px solid; cursor:none; width:640px; height:380px;">
+		<canvas id="canvas" width="640" height="380"></canvas>
+	</div>
+	<input type="button" id="run" value="run"/>
+</body>
+</html>
